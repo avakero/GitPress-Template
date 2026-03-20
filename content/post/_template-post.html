@@ -1,0 +1,85 @@
+---
+post_id: null
+post_type: post
+slug: "your-post-slug"
+title: "投稿タイトルをここに入力"
+status: "publish"
+date: "2026-03-20T10:00:00+09:00"
+taxonomies:
+  category:
+    - "カテゴリ名"
+  post_tag:
+    - "タグ1"
+    - "タグ2"
+custom_fields:
+  seo_title: "SEOタイトル"
+  seo_description: "SEOディスクリプション"
+---
+
+<article class="gp-post-content">
+  <h2 class="gp-post-h2">導入セクション</h2>
+
+  <p class="gp-post-intro">
+    この段落は目立つスタイルで表示されます。投稿の最初に概要や要点をここに記載します。
+  </p>
+
+  <p class="gp-post-p">
+    通常の段落テキストはこのクラスを使用します。本文のメインコンテンツをここに書きます。
+  </p>
+
+  <h2 class="gp-post-h2">メインセクション</h2>
+
+  <p class="gp-post-p">
+    詳しい説明をここに追加します。複数の段落を使って説明できます。
+  </p>
+
+  <section class="gp-post-featured-box">
+    <h3 class="gp-post-h3">重要なポイント</h3>
+    <p class="gp-post-p">
+      このボックスは強調されます。特に注目させたい情報や重要なポイントをここに配置します。
+    </p>
+  </section>
+
+  <h3 class="gp-post-h3">サブセクション</h3>
+
+  <p class="gp-post-p">
+    さらに詳しい説明。箇条書きにしたい場合はリストを使用します。
+  </p>
+
+  <ul class="gp-post-list">
+    <li>ポイント1</li>
+    <li>ポイント2</li>
+    <li>ポイント3</li>
+  </ul>
+
+  <h3 class="gp-post-h3">コード例</h3>
+
+  <pre><code class="gp-post-code">git add content/post/
+git commit -m "Add new post"
+git push origin main
+</code></pre>
+
+  <h3 class="gp-post-h3">引用の例</h3>
+
+  <blockquote class="gp-post-blockquote">
+    <p>この部分は引用として表示されます。外部の意見や名言などをここに引用します。</p>
+  </blockquote>
+
+  <h2 class="gp-post-h2">まとめ</h2>
+
+  <p class="gp-post-p">
+    投稿の結論や要約をここに記載します。読者がすぐに内容を理解できるようにまとめます。
+  </p>
+</article>
+
+<!-- 使用可能なセレクタ：
+  .gp-post-h2, .gp-post-h3, .gp-post-h4 - 見出し
+  .gp-post-p - 通常段落
+  .gp-post-intro - 導入段落（目立つスタイル）
+  .gp-post-featured-box - 強調ボックス
+  .gp-post-list - リスト
+  .gp-post-code - コード
+  .gp-post-blockquote - 引用
+  .gp-post-img - 画像
+  詳細は docs/SELECTOR_RULES.md を参照
+-->

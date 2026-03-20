@@ -1,0 +1,14 @@
+# カスタム投稿タイプ定義（拡張時に使用）
+# post_type_key: 説明
+post:
+  label: "投稿"
+  description: "ブログ投稿"
+
+page:
+  label: "固定ページ"
+  description: "固定ページ"
+
+# 将来的にカスタム投稿を追加する場合：
+# news:
+#   label: "ニュース"
+#   description: "ニュース記事"

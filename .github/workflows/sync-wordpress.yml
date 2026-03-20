@@ -1,0 +1,73 @@
+name: Sync WordPress Content
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'content/**'
+      - 'scripts/**'
+      - '.github/workflows/sync-wordpress.yml'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      statuses: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r scripts/requirements.txt
+
+      - name: Verify WordPress connectivity
+        run: |
+          python -c "
+          import requests
+          import os
+          url = os.getenv('WP_BASE_URL') + '/wp-json/'
+          try:
+            response = requests.head(url, timeout=30)
+            print(f'✓ WordPress API is reachable ({response.status_code})')
+          except Exception as e:
+            print(f'✗ Failed to connect to WordPress API: {e}')
+            exit(1)
+          "
+        env:
+          WP_BASE_URL: ${{ secrets.WP_BASE_URL }}
+
+      - name: Run WordPress sync
+        id: sync
+        run: python scripts/sync_wp_content.py
+        env:
+          WP_BASE_URL: ${{ secrets.WP_BASE_URL }}
+          WP_USERNAME: ${{ secrets.WP_USERNAME }}
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+          WP_TIMEOUT: '30'
+
+      - name: Create sync report
+        if: always()
+        run: |
+          echo "## WordPress Sync Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp**: $(date -u)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::WordPress sync failed for commit ${{ github.sha }}"
+          echo "### WordPress Sync Failed" >> $GITHUB_STEP_SUMMARY
+          echo "Check the workflow logs for details." >> $GITHUB_STEP_SUMMARY

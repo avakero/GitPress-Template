@@ -1,0 +1,20 @@
+# タクソノミー（カテゴリ・タグ等）定義
+category:
+  label: "カテゴリ"
+  description: "投稿のカテゴリ"
+  post_types:
+    - post
+    - page
+
+post_tag:
+  label: "タグ"
+  description: "投稿のタグ"
+  post_types:
+    - post
+
+# カスタムタクソノミーを追加する場合：
+# custom_taxonomy_slug:
+#   label: "カスタムタクソノミー名"
+#   description: "説明"
+#   post_types:
+#     - post

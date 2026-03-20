@@ -46,14 +46,35 @@ jobs:
         env:
           WP_BASE_URL: ${{ secrets.WP_BASE_URL }}
 
+      - name: Detect changed content files
+        id: changed
+        run: |
+          CHANGED=$(git diff --name-only --diff-filter=ACM HEAD~1 HEAD -- 'content/**/*.html' || true)
+          if [ -z "$CHANGED" ]; then
+            echo "files=" >> $GITHUB_OUTPUT
+            echo "No content files changed — will run full sync"
+          else
+            echo "files<<EOF" >> $GITHUB_OUTPUT
+            echo "$CHANGED" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            echo "Changed files:"
+            echo "$CHANGED"
+          fi
+
       - name: Run WordPress sync
         id: sync
-        run: python scripts/sync_wp_content.py
+        run: |
+          if [ -n "$CHANGED_FILES" ]; then
+            python scripts/sync_wp_content.py --files $CHANGED_FILES
+          else
+            python scripts/sync_wp_content.py
+          fi
         env:
           WP_BASE_URL: ${{ secrets.WP_BASE_URL }}
           WP_USERNAME: ${{ secrets.WP_USERNAME }}
           WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
           WP_TIMEOUT: '30'
+          CHANGED_FILES: ${{ steps.changed.outputs.files }}
 
       - name: Create sync report
         if: always()

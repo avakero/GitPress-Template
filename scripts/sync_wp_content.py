@@ -392,8 +392,8 @@ class WordPressSync:
             logger.error(f"Unexpected error syncing {file_path}: {e}", exc_info=True)
             return False
 
-    def run(self):
-        """全てのコンテンツファイルを同期"""
+    def run(self, files: Optional[List[str]] = None):
+        """コンテンツファイルを同期（filesが指定されていればそのファイルのみ）"""
         content_dir = Path(__file__).parent.parent / 'content'
 
         if not content_dir.exists():
@@ -403,19 +403,43 @@ class WordPressSync:
         success_count = 0
         error_count = 0
 
-        for post_type_dir in content_dir.iterdir():
-            if not post_type_dir.is_dir():
-                continue
+        if files:
+            # 指定ファイルのみ同期
+            logger.info(f"Incremental sync: {len(files)} file(s)")
+            repo_root = Path(__file__).parent.parent
+            for file_rel in files:
+                file_path = repo_root / file_rel
+                if not file_path.exists() or not file_path.suffix == '.html':
+                    logger.warning(f"Skipping non-existent or non-HTML file: {file_rel}")
+                    continue
+                # content/<post_type>/<file>.html からpost_typeを取得
+                try:
+                    post_type = file_path.relative_to(content_dir).parts[0]
+                except (ValueError, IndexError):
+                    logger.warning(f"Skipping file outside content dir: {file_rel}")
+                    continue
 
-            post_type = post_type_dir.name
-
-            for html_file in sorted(post_type_dir.rglob('*.html')):
-                logger.info(f"Processing: {html_file.relative_to(content_dir)}")
-
-                if self.sync_post(html_file, post_type):
+                logger.info(f"Processing: {file_path.relative_to(content_dir)}")
+                if self.sync_post(file_path, post_type):
                     success_count += 1
                 else:
                     error_count += 1
+        else:
+            # 全ファイル同期（フォールバック）
+            logger.info("Full sync: processing all content files")
+            for post_type_dir in content_dir.iterdir():
+                if not post_type_dir.is_dir():
+                    continue
+
+                post_type = post_type_dir.name
+
+                for html_file in sorted(post_type_dir.rglob('*.html')):
+                    logger.info(f"Processing: {html_file.relative_to(content_dir)}")
+
+                    if self.sync_post(html_file, post_type):
+                        success_count += 1
+                    else:
+                        error_count += 1
 
         logger.info(f"\n--- Summary ---")
         logger.info(f"Successful: {success_count}")
@@ -441,6 +465,11 @@ def main():
         action='store_true',
         help='Skip new posts (only update existing ones). Useful for initial verification.'
     )
+    parser.add_argument(
+        '--files',
+        nargs='*',
+        help='Specific files to sync (e.g. content/post/my-post.html). If omitted, syncs all.'
+    )
 
     args = parser.parse_args()
 
@@ -450,7 +479,7 @@ def main():
         logger.info("=" * 60)
 
     sync = WordPressSync(dry_run=args.dry_run, skip_new=args.skip_new)
-    success = sync.run()
+    success = sync.run(files=args.files if args.files else None)
 
     if args.dry_run:
         logger.info("\n" + "=" * 60)
